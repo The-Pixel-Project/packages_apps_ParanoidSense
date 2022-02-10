@@ -80,3 +80,72 @@ cc_prebuilt_library_shared {
     prefer: true,
     system_ext_specific: true,
 }
+
+cc_prebuilt_library_shared {
+    name: "libarcsoft_faceid",
+    strip: {
+        none: true,
+    },
+    target: {
+        android_arm64: {
+            srcs: ["libarcsoft_faceid.so"],
+        },
+    },
+
+    compile_multilib: "64",
+    check_elf_files: false,
+    prefer: true,
+    system_ext_specific: true,
+}
+
+cc_prebuilt_library_shared {
+    name: "libarcsoft-lib",
+    strip: {
+        none: true,
+    },
+    target: {
+        android_arm64: {
+            srcs: ["libarcsoft-lib.so"],
+        },
+    },
+
+    compile_multilib: "64",
+    check_elf_files: false,
+    prefer: true,
+    system_ext_specific: true,
+}
+
+cc_prebuilt_library_shared {
+    name: "libarcsoftbase",
+    strip: {
+        none: true,
+    },
+    target: {
+        android_arm64: {
+            srcs: ["libarcsoftbase.so"],
+        },
+    },
+
+    compile_multilib: "64",
+    check_elf_files: false,
+    prefer: true,
+    system_ext_specific: true,
+}
+
+cc_prebuilt_library_shared {
+    name: "libmpbase_faceunlock",
+    stem: "libmpbase",
+    strip: {
+        none: true,
+    },
+    target: {
+        android_arm64: {
+            srcs: ["libmpbase.so"],
+        },
+    },
+
+    compile_multilib: "64",
+    check_elf_files: false,
+    prefer: true,
+    system_ext_specific: true,
+}
