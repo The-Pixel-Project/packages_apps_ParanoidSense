@@ -16,6 +16,9 @@ java_library {
     name: "vendor.aospa.biometrics.face.impl",
     installable: false,
     sdk_version: "current",
-    srcs: ["src/**/*.java"],
+    srcs: [
+        "src/**/*.java",
+        "src/**/*.kt",
+    ],
     system_ext_specific: true,
 }

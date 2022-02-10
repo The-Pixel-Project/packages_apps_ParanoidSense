@@ -5,22 +5,21 @@ import android.util.Log;
 
 import co.aospa.sense.util.PreferenceHelper;
 import co.aospa.sense.vendor.Vendor;
+import co.aospa.sense.vendor.constants.AppConstants;
 import co.aospa.sense.vendor.util.ConUtil;
 import co.aospa.sense.vendor.util.VendorUnlockEncryptor;
 
 import java.io.File;
 
-/* loaded from: vendorImplPrebuilt.jar:co/aospa/sense/vendor/impl/FacePPImpl.class */
 public class FacePPImpl extends Vendor {
-    private static final String TAG = FacePPImpl.class.getSimpleName();
-    private static final boolean DEBUG = true;
     private static final String SDK_VERSION = "1";
+    private static final String TAG = FacePPImpl.class.getSimpleName();
+    private static final boolean DEBUG = false;
     private final Context mContext;
     private SERVICE_STATE mCurrentState = SERVICE_STATE.INITING;
     private final PreferenceHelper mPreferenceHelper;
 
-    /* loaded from: vendorImplPrebuilt.jar:co/aospa/sense/vendor/impl/FacePPImpl$SERVICE_STATE.class */
-    public enum SERVICE_STATE {
+    private enum SERVICE_STATE {
         INITING,
         IDLE,
         ENROLLING,
@@ -29,48 +28,57 @@ public class FacePPImpl extends Vendor {
     }
 
     public FacePPImpl(Context context) {
-        this.mContext = context;
-        this.mPreferenceHelper = new PreferenceHelper(context);
+        mContext = context;
+        mPreferenceHelper = new PreferenceHelper(context);
     }
 
-    @Override // co.aospa.sense.vendor.Vendor
+    @Override
     public void init() {
         synchronized (this) {
-            if (this.mCurrentState != SERVICE_STATE.INITING) {
+            if (mCurrentState != SERVICE_STATE.INITING) {
                 Log.d(TAG, " Has been init, ignore");
                 return;
             }
-            String str = TAG;
-            Log.i(str, "init start");
+            if (DEBUG) {
+                Log.i(TAG, "init start");
+            }
             boolean z =
-                    !SDK_VERSION.equals(this.mPreferenceHelper.getStringValueByKey("sdk_version"));
-            File dir = this.mContext.getDir("faceunlock_data", 0);
+                    !SDK_VERSION.equals(
+                            mPreferenceHelper.getStringValueByKey(
+                                    AppConstants.SHARED_KEY_SDK_VERSION));
+            File dir = mContext.getDir("faceunlock_data", 0);
             if (!dir.exists()) {
                 dir.mkdirs();
             }
-            String raw = ConUtil.getRaw(this.mContext, "model_file", "model", "model_file", z);
+            String raw = ConUtil.getRaw(mContext, "model_file", "model", "model_file", z);
             if (raw == null) {
-                Log.e(str, "Unavalibale memory, init failed, stop self");
+                Log.e(TAG, "Unavalibale memory, init failed, stop self");
                 return;
             }
-            String raw2 = ConUtil.getRaw(this.mContext, "panorama_mgb", "model", "panorama_mgb", z);
+            String raw2 = ConUtil.getRaw(mContext, "panorama_mgb", "model", "panorama_mgb", z);
             MegviiFaceUnlockImpl.getInstance()
                     .initHandle(dir.getAbsolutePath(), new VendorUnlockEncryptor());
-            Log.i(str, "init stop");
-            if (MegviiFaceUnlockImpl.getInstance().initAllWithPath(raw2, "", raw) != 0) {
-                Log.e(str, "init failed, stop self");
+            long initAllWithPath =
+                    MegviiFaceUnlockImpl.getInstance().initAllWithPath(raw2, "", raw);
+            if (DEBUG) {
+                Log.i(TAG, "init stop");
+            }
+            if (initAllWithPath != 0) {
+                Log.e(TAG, "init failed, stop self");
                 return;
             }
             if (z) {
                 restoreFeature();
-                this.mPreferenceHelper.saveStringValue("sdk_version", SDK_VERSION);
+                mPreferenceHelper.saveStringValue(AppConstants.SHARED_KEY_SDK_VERSION, SDK_VERSION);
             }
-            this.mCurrentState = SERVICE_STATE.IDLE;
+            mCurrentState = SERVICE_STATE.IDLE;
         }
     }
 
     private void restoreFeature() {
-        Log.i(TAG, "RestoreFeature");
+        if (DEBUG) {
+            Log.i(TAG, "RestoreFeature");
+        }
         synchronized (this) {
             MegviiFaceUnlockImpl.getInstance().prepare();
             MegviiFaceUnlockImpl.getInstance().restoreFeature();
@@ -78,34 +86,38 @@ public class FacePPImpl extends Vendor {
         }
     }
 
-    @Override // co.aospa.sense.vendor.Vendor
+    @Override
     public void compareStart() {
         synchronized (this) {
-            if (this.mCurrentState == SERVICE_STATE.INITING) {
+            if (mCurrentState == SERVICE_STATE.INITING) {
                 init();
             }
-            if (this.mCurrentState == SERVICE_STATE.UNLOCKING) {
+            if (mCurrentState == SERVICE_STATE.UNLOCKING) {
                 return;
             }
-            if (this.mCurrentState != SERVICE_STATE.IDLE) {
-                Log.e(TAG, "unlock start failed: current state: " + this.mCurrentState);
+            if (mCurrentState != SERVICE_STATE.IDLE) {
+                Log.e(TAG, "unlock start failed: current state: " + mCurrentState);
                 return;
             }
-            Log.i(TAG, "compareStart");
+            if (DEBUG) {
+                Log.i(TAG, "compareStart");
+            }
             MegviiFaceUnlockImpl.getInstance().prepare();
-            this.mCurrentState = SERVICE_STATE.UNLOCKING;
+            mCurrentState = SERVICE_STATE.UNLOCKING;
         }
     }
 
-    @Override // co.aospa.sense.vendor.Vendor
+    @Override
     public int compare(byte[] bArr, int i, int i2, int i3, boolean z, boolean z2, int[] iArr) {
         synchronized (this) {
-            if (this.mCurrentState != SERVICE_STATE.UNLOCKING) {
-                Log.e(TAG, "compare failed: current state: " + this.mCurrentState);
+            if (mCurrentState != SERVICE_STATE.UNLOCKING) {
+                Log.e(TAG, "compare failed: current state: " + mCurrentState);
                 return -1;
             }
             int compare = MegviiFaceUnlockImpl.getInstance().compare(bArr, i, i2, i3, z, z2, iArr);
-            Log.i(TAG, "compare finish: " + compare);
+            if (DEBUG) {
+                Log.i(TAG, "compare finish: " + compare);
+            }
             if (compare == 0) {
                 compareStop();
             }
@@ -113,99 +125,117 @@ public class FacePPImpl extends Vendor {
         }
     }
 
-    @Override // co.aospa.sense.vendor.Vendor
+    @Override
     public void compareStop() {
         synchronized (this) {
-            if (this.mCurrentState != SERVICE_STATE.UNLOCKING) {
-                Log.e(TAG, "compareStop failed: current state: " + this.mCurrentState);
+            if (mCurrentState != SERVICE_STATE.UNLOCKING) {
+                Log.e(TAG, "compareStop failed: current state: " + mCurrentState);
                 return;
             }
-            Log.i(TAG, "compareStop");
+            if (DEBUG) {
+                Log.i(TAG, "compareStop");
+            }
             MegviiFaceUnlockImpl.getInstance().reset();
-            this.mCurrentState = SERVICE_STATE.IDLE;
+            mCurrentState = SERVICE_STATE.IDLE;
         }
     }
 
-    @Override // co.aospa.sense.vendor.Vendor
+    @Override
     public void saveFeatureStart() {
         synchronized (this) {
-            if (this.mCurrentState == SERVICE_STATE.INITING) {
+            if (mCurrentState == SERVICE_STATE.INITING) {
                 init();
-            } else if (this.mCurrentState == SERVICE_STATE.UNLOCKING) {
+            } else if (mCurrentState == SERVICE_STATE.UNLOCKING) {
                 Log.e(TAG, "save feature, stop unlock");
                 compareStop();
             }
-            if (this.mCurrentState != SERVICE_STATE.IDLE) {
-                Log.e(TAG, "saveFeatureStart failed: current state: " + this.mCurrentState);
+            if (mCurrentState != SERVICE_STATE.IDLE) {
+                Log.e(TAG, "saveFeatureStart failed: current state: " + mCurrentState);
             }
-            Log.i(TAG, "saveFeatureStart");
+            if (DEBUG) {
+                Log.i(TAG, "saveFeatureStart");
+            }
             MegviiFaceUnlockImpl.getInstance().prepare();
-            this.mCurrentState = SERVICE_STATE.ENROLLING;
+            mCurrentState = SERVICE_STATE.ENROLLING;
         }
     }
 
-    @Override // co.aospa.sense.vendor.Vendor
+    @Override
     public int saveFeature(
             byte[] bArr, int i, int i2, int i3, boolean z, byte[] bArr2, byte[] bArr3, int[] iArr) {
         synchronized (this) {
-            if (this.mCurrentState != SERVICE_STATE.ENROLLING) {
-                Log.e(TAG, "save feature failed , current state : " + this.mCurrentState);
+            if (mCurrentState != SERVICE_STATE.ENROLLING) {
+                Log.e(TAG, "save feature failed , current state : " + mCurrentState);
                 return -1;
             }
-            Log.i(TAG, "saveFeature");
+            if (DEBUG) {
+                Log.i(TAG, "saveFeature");
+            }
             return MegviiFaceUnlockImpl.getInstance()
                     .saveFeature(bArr, i, i2, i3, z, bArr2, bArr3, iArr);
         }
     }
 
-    @Override // co.aospa.sense.vendor.Vendor
+    @Override
     public void saveFeatureStop() {
         synchronized (this) {
-            if (this.mCurrentState != SERVICE_STATE.ENROLLING) {
-                Log.d(TAG, "saveFeatureStop failed: current state: " + this.mCurrentState);
+            if (mCurrentState != SERVICE_STATE.ENROLLING) {
+                Log.d(TAG, "saveFeatureStop failed: current state: " + mCurrentState);
             }
-            Log.i(TAG, "saveFeatureStop");
+            if (DEBUG) {
+                Log.i(TAG, "saveFeatureStop");
+            }
             MegviiFaceUnlockImpl.getInstance().reset();
-            this.mCurrentState = SERVICE_STATE.IDLE;
+            mCurrentState = SERVICE_STATE.IDLE;
         }
     }
 
-    @Override // co.aospa.sense.vendor.Vendor
+    @Override
     public void setDetectArea(int i, int i2, int i3, int i4) {
         synchronized (this) {
-            Log.i(TAG, "setDetectArea start");
+            if (DEBUG) {
+                Log.i(TAG, "setDetectArea start");
+            }
             MegviiFaceUnlockImpl.getInstance().setDetectArea(i, i2, i3, i4);
         }
     }
 
-    @Override // co.aospa.sense.vendor.Vendor
+    @Override
     public void deleteFeature(int i) {
         synchronized (this) {
-            String str = TAG;
-            Log.i(str, "deleteFeature start");
+            if (DEBUG) {
+                Log.i(TAG, "deleteFeature start");
+            }
             MegviiFaceUnlockImpl.getInstance().deleteFeature(i);
-            Log.i(str, "deleteFeature stop");
+            if (DEBUG) {
+                Log.i(TAG, "deleteFeature stop");
+            }
             release();
         }
     }
 
-    @Override // co.aospa.sense.vendor.Vendor
+    @Override
     public int getFeatureCount() {
         return 0;
     }
 
-    @Override // co.aospa.sense.vendor.Vendor
+    @Override
     public void release() {
         synchronized (this) {
-            if (this.mCurrentState == SERVICE_STATE.INITING) {
-                Log.i(TAG, "has been released, ignore");
+            if (mCurrentState == SERVICE_STATE.INITING) {
+                if (DEBUG) {
+                    Log.i(TAG, "has been released, ignore");
+                }
                 return;
             }
-            String str = TAG;
-            Log.i(str, "release start");
+            if (DEBUG) {
+                Log.i(TAG, "release start");
+            }
             MegviiFaceUnlockImpl.getInstance().release();
-            this.mCurrentState = SERVICE_STATE.INITING;
-            Log.i(str, "release stop");
+            mCurrentState = SERVICE_STATE.INITING;
+            if (DEBUG) {
+                Log.i(TAG, "release stop");
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.megvii.facepp.sdk;
 
+import android.annotation.TargetApi;
 import android.media.Image;
 import android.os.Environment;
 import android.os.StatFs;
@@ -37,70 +38,72 @@ public class Lite {
         return sInstance;
     }
 
+    public Lite() {}
+
     public void initHandle(String str, UnlockEncryptor unlockEncryptor) {
         initHandle(str);
-        this.mFeatureRestoreHelper.setUnlockEncryptor(unlockEncryptor);
+        mFeatureRestoreHelper.setUnlockEncryptor(unlockEncryptor);
     }
 
     public void initHandle(String str) {
-        if (this.handle == 0) {
-            this.handle = LiteApi.nativeInitHandle(str);
-            this.mPath = str;
+        if (handle == 0) {
+            handle = LiteApi.nativeInitHandle(str);
+            mPath = str;
         }
     }
 
     public int initAll(String str, String str2, byte[] bArr) {
-        return (int) LiteApi.nativeInitAll(this.handle, str, str2, bArr);
+        return (int) LiteApi.nativeInitAll(handle, str, str2, bArr);
     }
 
     public int initAllWithPath(String str, String str2, String str3) {
-        return (int) LiteApi.nativeInitAllWithPath(this.handle, str, str2, str3);
+        return (int) LiteApi.nativeInitAllWithPath(handle, str, str2, str3);
     }
 
     public int initLive(String str, String str2) {
-        return (int) LiteApi.nativeInitLive(this.handle, str, str2);
+        return (int) LiteApi.nativeInitLive(handle, str, str2);
     }
 
     public int initDetect(byte[] bArr) {
-        return (int) LiteApi.nativeInitDetect(this.handle, bArr);
+        return (int) LiteApi.nativeInitDetect(handle, bArr);
     }
 
     public int initDetectWithPath(String str) {
-        return (int) LiteApi.nativeInitDetectWithPath(this.handle, str);
+        return (int) LiteApi.nativeInitDetectWithPath(handle, str);
     }
 
     public int releaseLive() {
-        return (int) LiteApi.nativeReleaseLive(this.handle);
+        return (int) LiteApi.nativeReleaseLive(handle);
     }
 
     public int releaseDetect() {
-        return (int) LiteApi.nativeReleaseDetect(this.handle);
+        return (int) LiteApi.nativeReleaseDetect(handle);
     }
 
     public void release() {
-        LiteApi.nativeRelease(this.handle);
-        this.handle = 0L;
+        LiteApi.nativeRelease(handle);
+        handle = 0;
     }
 
     public int compare(byte[] bArr, int i, int i2, int i3, boolean z, boolean z2, int[] iArr) {
-        if (iArr.length < 20) {
+        if (iArr.length < RESULT_SIZE) {
             return 1;
         }
-        return LiteApi.nativeCompare(this.handle, bArr, i, i2, i3, z, z2, iArr);
+        return LiteApi.nativeCompare(handle, bArr, i, i2, i3, z, z2, iArr);
     }
 
     public int compare(byte[] bArr, int i, int i2, int i3, int[] iArr) {
-        if (iArr.length < 20) {
+        if (iArr.length < RESULT_SIZE) {
             return 1;
         }
-        return LiteApi.nativeCompare(this.handle, bArr, i, i2, i3, false, false, iArr);
+        return LiteApi.nativeCompare(handle, bArr, i, i2, i3, false, false, iArr);
     }
 
     public int compareMultiImages(MGULKImage[] mGULKImageArr, int[] iArr) {
-        if (iArr.length < 20) {
+        if (iArr.length < RESULT_SIZE) {
             return 1;
         }
-        return LiteApi.nativeCompareMultiImages(this.handle, mGULKImageArr, iArr);
+        return LiteApi.nativeCompareMultiImages(handle, mGULKImageArr, iArr);
     }
 
     public int saveFeature(
@@ -114,17 +117,16 @@ public class Lite {
 
     public int saveFeature(
             byte[] bArr, int i, int i2, int i3, boolean z, byte[] bArr2, byte[] bArr3, int[] iArr) {
-        if (new StatFs(Environment.getDataDirectory().getPath()).getAvailableBlocksLong() < 256) {
+        if ((new StatFs(Environment.getDataDirectory().getPath()).getAvailableBlocksLong()) < 256) {
             return 33;
         }
         if (bArr3.length < 40000 || bArr2.length < 10000) {
             return 1;
         }
         int nativeSaveFeature =
-                LiteApi.nativeSaveFeature(
-                        this.handle, bArr, i, i2, i3, z ? 1 : 0, bArr2, bArr3, iArr);
+                LiteApi.nativeSaveFeature(handle, bArr, i, i2, i3, z ? 1 : 0, bArr2, bArr3, iArr);
         if (nativeSaveFeature == 0) {
-            this.mFeatureRestoreHelper.saveRestoreImage(bArr3, this.mPath, iArr[0]);
+            mFeatureRestoreHelper.saveRestoreImage(bArr3, mPath, iArr[0]);
         }
         return nativeSaveFeature;
     }
@@ -135,9 +137,9 @@ public class Lite {
             return 1;
         }
         int nativeSaveFeature =
-                LiteApi.nativeSaveFeature(this.handle, bArr, i, i2, i3, 1, bArr2, bArr3, iArr);
+                LiteApi.nativeSaveFeature(handle, bArr, i, i2, i3, 1, bArr2, bArr3, iArr);
         if (nativeSaveFeature == 0) {
-            this.mFeatureRestoreHelper.saveRestoreImage(bArr3, this.mPath, iArr[0]);
+            mFeatureRestoreHelper.saveRestoreImage(bArr3, mPath, iArr[0]);
         }
         return nativeSaveFeature;
     }
@@ -145,9 +147,9 @@ public class Lite {
     public int saveFeatureMultiImages(
             MGULKImage[] mGULKImageArr, byte[] bArr, byte[] bArr2, int[] iArr) {
         int nativeSaveFeatureMultiImages =
-                LiteApi.nativeSaveFeatureMultiImages(this.handle, mGULKImageArr, bArr, bArr2, iArr);
+                LiteApi.nativeSaveFeatureMultiImages(handle, mGULKImageArr, bArr, bArr2, iArr);
         if (nativeSaveFeatureMultiImages == 0) {
-            this.mFeatureRestoreHelper.saveRestoreImage(bArr2, this.mPath, iArr[0]);
+            mFeatureRestoreHelper.saveRestoreImage(bArr2, mPath, iArr[0]);
         }
         return nativeSaveFeatureMultiImages;
     }
@@ -158,10 +160,9 @@ public class Lite {
             return 1;
         }
         int nativeUpdateFeature =
-                LiteApi.nativeUpdateFeature(
-                        this.handle, bArr, i, i2, i3, z ? 1 : 0, bArr2, bArr3, i4);
+                LiteApi.nativeUpdateFeature(handle, bArr, i, i2, i3, z ? 1 : 0, bArr2, bArr3, i4);
         if (nativeUpdateFeature == 0) {
-            this.mFeatureRestoreHelper.saveRestoreImage(bArr3, this.mPath, i4);
+            mFeatureRestoreHelper.saveRestoreImage(bArr3, mPath, i4);
         }
         return nativeUpdateFeature;
     }
@@ -171,72 +172,73 @@ public class Lite {
     }
 
     public int deleteFeature(int i) {
-        int nativeDeleteFeature = LiteApi.nativeDeleteFeature(this.handle, i);
-        this.mFeatureRestoreHelper.deleteRestoreImage(this.mPath, i);
+        int nativeDeleteFeature = LiteApi.nativeDeleteFeature(handle, i);
+        mFeatureRestoreHelper.deleteRestoreImage(mPath, i);
         return nativeDeleteFeature;
     }
 
     public int restoreFeature() {
-        return this.mFeatureRestoreHelper.restoreAllFeature(this.mPath);
+        return mFeatureRestoreHelper.restoreAllFeature(mPath);
     }
 
     public int setConfig(float f, float f2, float f3, float f4, boolean z, boolean z2) {
-        return LiteApi.nativeSetConfig(this.handle, f, f2, f3, f4, z, z2);
+        return LiteApi.nativeSetConfig(handle, f, f2, f3, f4, z, z2);
     }
 
     public int setConfig(float f, float f2, float f3, float f4) {
-        return LiteApi.nativeSetConfig(this.handle, f, f2, f3, f4, false, false);
+        return LiteApi.nativeSetConfig(handle, f, f2, f3, f4, false, false);
     }
 
     public int setConfig(LiteConfig liteConfig) {
         if (liteConfig == null) {
             return -1;
         }
-        return LiteApi.nativeSetConfigV2(this.handle, liteConfig);
+        return LiteApi.nativeSetConfigV2(handle, liteConfig);
     }
 
     public int reset() {
-        return LiteApi.nativeReset(this.handle);
+        return LiteApi.nativeReset(handle);
     }
 
     public int prepare(MGULKPowerMode mGULKPowerMode) {
-        int ordinal = mGULKPowerMode.ordinal();
-        int i = 2;
-        if (ordinal != 1) {
-            if (ordinal == 2) {
-                i = 1;
+        int i = mGULKPowerMode.ordinal();
+        int i2 = 0;
+        if (i != 1) {
+            if (i == 2) {
+                i2 = 1;
+            } else if (i == 3) {
+                i2 = 2;
             }
-            return LiteApi.nativePrepareWithPower(this.handle, i);
         }
-        return LiteApi.nativePrepareWithPower(this.handle, 0);
+        return LiteApi.nativePrepareWithPower(handle, i2);
     }
 
     public int prepare() {
         MGULKPowerMode.MG_UNLOCK_POWER_HIGH.ordinal();
-        return LiteApi.nativePrepare(this.handle);
+        return LiteApi.nativePrepare(handle);
     }
 
     public int setDetectArea(int i, int i2, int i3, int i4) {
-        return LiteApi.nativeSetDetectArea(this.handle, i, i2, i3, i4);
+        return LiteApi.nativeSetDetectArea(handle, i, i2, i3, i4);
     }
 
     public String getVersion() {
-        return LiteApi.nativeGetVersion(this.handle);
+        return LiteApi.nativeGetVersion(handle);
     }
 
     public int getFeature(byte[] bArr, int i, int i2, int i3, byte[] bArr2) {
         if (bArr2.length < 10000) {
             return 1;
         }
-        return LiteApi.nativeGetFeature(this.handle, bArr, i, i2, i3, bArr2);
+        return LiteApi.nativeGetFeature(handle, bArr, i, i2, i3, bArr2);
     }
 
     public int compareFeatures(byte[] bArr, float[] fArr, int i, boolean z) {
-        return LiteApi.nativeCompareFeatures(this.handle, bArr, fArr, i, z);
+        return LiteApi.nativeCompareFeatures(handle, bArr, fArr, i, z);
     }
 
     public int checkFeatureValid(int i) {
-        return LiteApi.nativeCheckFeatureValid(this.handle, i);
+        return LiteApi.nativeCheckFeatureValid(handle, i);
     }
 
     public int getFeatureCount() {
@@ -248,11 +250,12 @@ public class Lite {
     }
 
     public LiteConfig getConfig() {
-        LiteConfig liteConfig = new LiteConfig(this, this, this, null);
-        LiteApi.nativeGetConfig(this.handle, liteConfig);
+        LiteConfig liteConfig = new LiteConfig(this, null);
+        LiteApi.nativeGetConfig(handle, liteConfig);
         return liteConfig;
     }
 
+    @TargetApi(21)
     public static int image2NV21(Image image, byte[] bArr) {
         int readImageIntoBuffer = readImageIntoBuffer(image, bArr);
         if (readImageIntoBuffer == 1) {
@@ -262,6 +265,7 @@ public class Lite {
         return readImageIntoBuffer;
     }
 
+    @TargetApi(21)
     private static int readImageIntoBuffer(Image image, byte[] bArr) {
         int i;
         int i2;
@@ -293,22 +297,28 @@ public class Lite {
                 i3 += i5;
             } else {
                 byte[] bArr2 = new byte[rowStride];
-                for (int i6 = 0; i6 < i2 - 1; i6++) {
+                int i6 = i3;
+                int i7 = 0;
+                while (i7 < i2 - 1) {
                     buffer.get(bArr2, 0, rowStride);
-                    int i7 = 0;
-                    while (i7 < i) {
-                        bArr[i3] = bArr2[i7 * pixelStride];
-                        i7++;
-                        i3++;
+                    int i8 = i6;
+                    int i9 = 0;
+                    while (i9 < i) {
+                        bArr[i8] = bArr2[i9 * pixelStride];
+                        i9++;
+                        i8++;
                     }
+                    i7++;
+                    i6 = i8;
                 }
                 buffer.get(bArr2, 0, Math.min(rowStride, buffer.remaining()));
-                int i8 = 0;
-                while (i8 < i) {
-                    bArr[i3] = bArr2[i8 * pixelStride];
-                    i8++;
-                    i3++;
+                int i10 = 0;
+                while (i10 < i) {
+                    bArr[i6] = bArr2[i10 * pixelStride];
+                    i10++;
+                    i6++;
                 }
+                i3 = i6;
             }
         }
         return 0;
@@ -322,7 +332,7 @@ public class Lite {
         int i3 = i2 * 4;
         int i4 = i2 * 5;
         int i5 = 0;
-        while (i5 < i - 1) {
+        while (i5 < bArr2.length - 1) {
             bArr2[i5] = bArr[i4];
             bArr2[i5 + 1] = bArr[i3];
             i5 += 2;
@@ -330,10 +340,7 @@ public class Lite {
             i3++;
         }
         int i6 = i * 2;
-        int i7 = length - i6;
-        if (i7 >= 0) {
-            System.arraycopy(bArr2, 0, bArr, i6, i7);
-        }
+        if (length - i6 >= 0) System.arraycopy(bArr2, 0, bArr, i6, length - i6);
     }
 
     public static class MGULKImage {
@@ -351,12 +358,12 @@ public class Lite {
         int width;
 
         public MGULKImage(int i, byte[] bArr, int i2, int i3, int i4, int i5) {
-            this.imageType = i;
-            this.imageData = bArr;
-            this.imageSize = i2;
-            this.width = i3;
-            this.height = i4;
-            this.angle = i5;
+            imageType = i;
+            imageData = bArr;
+            imageSize = i2;
+            width = i3;
+            height = i4;
+            angle = i5;
         }
     }
 
@@ -407,7 +414,7 @@ public class Lite {
         public float yawLeftThreshold;
         public float yawRightThreshold;
 
-        LiteConfig(Lite lite, Lite lite2, Lite lite3, MGULKPowerMode mGULKPowerMode) {
+        LiteConfig(Lite lite, MGULKPowerMode powerMode) {
             this();
         }
 
@@ -415,63 +422,63 @@ public class Lite {
 
         public String toString() {
             return "LiteConfig{compDeviceType="
-                    + this.compDeviceType
+                    + compDeviceType
                     + ", bigCpuCore="
-                    + this.bigCpuCore
+                    + bigCpuCore
                     + ", useModelToCheck3dPose="
-                    + this.useModelToCheck3dPose
+                    + useModelToCheck3dPose
                     + ", eyeOcclusion="
-                    + this.eyeOcclusion
+                    + eyeOcclusion
                     + ", mouthOcclusion="
-                    + this.mouthOcclusion
+                    + mouthOcclusion
                     + ", eyeStatus="
-                    + this.eyeStatus
+                    + eyeStatus
                     + ", light="
-                    + this.light
+                    + light
                     + ", blurness="
-                    + this.blurness
+                    + blurness
                     + ", compareBlurness="
-                    + this.compareBlurness
+                    + compareBlurness
                     + ", faceIntact="
-                    + this.faceIntact
+                    + faceIntact
                     + ", yawLeftThreshold="
-                    + this.yawLeftThreshold
+                    + yawLeftThreshold
                     + ", yawRightThreshold="
-                    + this.yawRightThreshold
+                    + yawRightThreshold
                     + ", pitchTopThreshold="
-                    + this.pitchTopThreshold
+                    + pitchTopThreshold
                     + ", pitchDownThreshold="
-                    + this.pitchDownThreshold
+                    + pitchDownThreshold
                     + ", CompareYawLeftThreshold="
-                    + this.CompareYawLeftThreshold
+                    + CompareYawLeftThreshold
                     + ", CompareYawRightThreshold="
-                    + this.CompareYawRightThreshold
+                    + CompareYawRightThreshold
                     + ", ComparePitchTopThreshold="
-                    + this.ComparePitchTopThreshold
+                    + ComparePitchTopThreshold
                     + ", ComparePitchDownThreshold="
-                    + this.ComparePitchDownThreshold
+                    + ComparePitchDownThreshold
                     + ", rectLeft="
-                    + this.rectLeft
+                    + rectLeft
                     + ", rectTop="
-                    + this.rectTop
+                    + rectTop
                     + ", rectRight="
-                    + this.rectRight
+                    + rectRight
                     + ", rectBottom="
-                    + this.rectBottom
+                    + rectBottom
                     + ", storeDebugImgMode="
-                    + this.storeDebugImgMode
+                    + storeDebugImgMode
                     + ", saveImagePath='"
-                    + this.saveImagePath
+                    + saveImagePath
                     + "', compareType="
-                    + this.compareType
+                    + compareType
                     + ", extractConfig="
-                    + this.extractConfig
+                    + extractConfig
                     + ", nativeLibraryPath='"
-                    + this.nativeLibraryPath
+                    + nativeLibraryPath
                     + "', openclCachePath='"
-                    + this.openclCachePath
+                    + openclCachePath
                     + "', snpeCachePath='"
-                    + this.snpeCachePath
+                    + snpeCachePath
                     + "'}";
         }
     }

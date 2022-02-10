@@ -43,7 +43,7 @@ public class FeatureRestoreHelper {
                 Log.i(TAG, "restoreAllFeature: " + name);
                 try {
                     i = Integer.parseInt(name.substring(8));
-                } catch (NumberFormatException e) {
+                } catch (NumberFormatException unused) {
                     i = -1;
                 }
                 if (i != -1) {
@@ -55,7 +55,10 @@ public class FeatureRestoreHelper {
                 }
             }
         }
-        return i2 == 0 ? 24 : 0;
+        if (i2 == 0) {
+            return 24;
+        }
+        return 0;
     }
 
     private int restoreFeatureAtPosition(int i, byte[] bArr) {
@@ -86,10 +89,9 @@ public class FeatureRestoreHelper {
             byte[] encrypt = unlockEncryptor.encrypt(bArr);
             int length = encrypt.length;
             byte[] bArr2 = sMagic;
-            byte[] bArr3 = new byte[length + bArr2.length];
-            System.arraycopy(bArr2, 0, bArr3, 0, bArr2.length);
-            System.arraycopy(encrypt, 0, bArr3, bArr2.length, encrypt.length);
-            bArr = bArr3;
+            bArr = new byte[(length + bArr2.length)];
+            System.arraycopy(bArr2, 0, bArr, 0, bArr2.length);
+            System.arraycopy(encrypt, 0, bArr, sMagic.length, encrypt.length);
         }
         int length2 = bArr.length;
         try {
@@ -124,14 +126,12 @@ public class FeatureRestoreHelper {
                 }
                 i += fileInputStream.read(bArr, i, i2);
             }
-            if (this.mEncryptor != null && startWithMagic(bArr)) {
-                byte[] bArr2 = sMagic;
-                int length2 = length - bArr2.length;
-                byte[] bArr3 = new byte[length2];
-                System.arraycopy(bArr, bArr2.length, bArr3, 0, length2);
-                return this.mEncryptor.decrypt(bArr3);
+            if (this.mEncryptor == null || !startWithMagic(bArr)) {
+                return bArr;
             }
-            return bArr;
+            byte[] bArr2 = new byte[(bArr.length - sMagic.length)];
+            System.arraycopy(bArr, sMagic.length, bArr2, 0, bArr2.length);
+            return this.mEncryptor.decrypt(bArr2);
         } catch (IOException e) {
             Log.e(TAG, "readFile failed", e);
             return bArr;
