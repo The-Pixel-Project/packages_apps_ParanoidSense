@@ -14,7 +14,10 @@
 
 android_app {
     name: "ParanoidSense",
-    srcs: ["src/**/*.java", "src/**/*.kt"],
+    srcs: [
+        "src/**/*.java",
+        "src/**/*.kt",
+    ],
     static_libs: [
         "androidx.core_core",
         "androidx.appcompat_appcompat",

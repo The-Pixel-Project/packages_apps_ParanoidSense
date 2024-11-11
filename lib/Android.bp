@@ -18,7 +18,9 @@ cc_prebuilt_library_shared {
         none: true,
     },
     target: {
-        android_arm64: { srcs: [ "libFaceDetectCA.so" ] },
+        android_arm64: {
+            srcs: ["libFaceDetectCA.so"],
+        },
     },
 
     compile_multilib: "64",
@@ -34,7 +36,9 @@ cc_prebuilt_library_shared {
         none: true,
     },
     target: {
-        android_arm64: { srcs: [ "libmegface.so" ] },
+        android_arm64: {
+            srcs: ["libmegface.so"],
+        },
     },
 
     compile_multilib: "64",
@@ -49,7 +53,9 @@ cc_prebuilt_library_shared {
         none: true,
     },
     target: {
-        android_arm64: { srcs: [ "libMegviiUnlock.so" ] },
+        android_arm64: {
+            srcs: ["libMegviiUnlock.so"],
+        },
     },
 
     compile_multilib: "64",
@@ -64,7 +70,9 @@ cc_prebuilt_library_shared {
         none: true,
     },
     target: {
-        android_arm64: { srcs: [ "libMegviiUnlock-jni-1.2.so" ] },
+        android_arm64: {
+            srcs: ["libMegviiUnlock-jni-1.2.so"],
+        },
     },
 
     compile_multilib: "64",
