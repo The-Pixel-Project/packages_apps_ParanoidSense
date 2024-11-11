@@ -106,13 +106,6 @@ cc_prebuilt_library_shared {
     system_ext_specific: true,
 }
 
-java_import {
-    name: "vendor.aospa.biometrics.face.impl",
-    jars: ["lib/vendorImplPrebuilt.jar"],
-    sdk_version: "current",
-    system_ext_specific: true,
-}
-
 prebuilt_etc {
     name: "default_permissions_co.aospa.sense.xml",
     src: "permissions/default_permissions_co.aospa.sense.xml",
